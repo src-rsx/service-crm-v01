@@ -1,21 +1,33 @@
 import {
   pgTable,
-  uuid,
+  serial,
+  integer,
   varchar,
+  boolean,
   text,
   timestamp,
-  integer
+  uuid
 } from "drizzle-orm/pg-core";
-import { tenants } from "./tenants";
 
-export const companies = pgTable("companies", {
+import { tenants } from "./tenants";
+import { companies } from "./companies";
+
+export const sites = pgTable("sites", {
   id: uuid("id").defaultRandom().primaryKey(),
 
-  customerCode: varchar("customer_code", {
-    length: 50,
-  }).notNull(),
+  tenantId: uuid("tenant_id")
+    .references(() => tenants.id)
+    .notNull(),
 
-  companyName: varchar("company_name", {
+  companyId: uuid("company_id")
+    .references(() => companies.id)
+    .notNull(),
+
+  siteCode: varchar("site_code", {
+    length: 50,
+  }),
+
+  siteName: varchar("site_name", {
     length: 255,
   }).notNull(),
 
@@ -29,10 +41,6 @@ export const companies = pgTable("companies", {
 
   email: varchar("email", {
     length: 255,
-  }),
-
-  gstNumber: varchar("gst_number", {
-    length: 50,
   }),
 
   address: text("address"),
@@ -49,13 +57,15 @@ export const companies = pgTable("companies", {
     length: 20,
   }),
 
-  remarks: text("remarks"),
+  isActive: boolean("is_active")
+    .default(true)
+    .notNull(),
 
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at")
+    .defaultNow()
+    .notNull(),
 
-  updatedAt: timestamp("updated_at").defaultNow(),
-
-  tenantId: uuid("tenant_id")
-  .references(() => tenants.id)
-  .notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull(),
 });

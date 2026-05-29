@@ -1,6 +1,6 @@
 {
-  "id": "7ef03440-5b0c-4f9b-8933-d5c4b18afea6",
-  "prevId": "9c30e1df-64ca-49d1-bb9e-ae767acf2cfb",
+  "id": "df5dcd4f-b7b8-43fe-ba34-7419a0345164",
+  "prevId": "7ef03440-5b0c-4f9b-8933-d5c4b18afea6",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -933,6 +933,96 @@
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.service_call_events": {
+      "name": "service_call_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "service_call_id": {
+          "name": "service_call_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "old_status": {
+          "name": "old_status",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "new_status": {
+          "name": "new_status",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "performed_by_user_id": {
+          "name": "performed_by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "service_call_events_service_call_id_service_calls_id_fk": {
+          "name": "service_call_events_service_call_id_service_calls_id_fk",
+          "tableFrom": "service_call_events",
+          "tableTo": "service_calls",
+          "columnsFrom": [
+            "service_call_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "service_call_events_performed_by_user_id_users_id_fk": {
+          "name": "service_call_events_performed_by_user_id_users_id_fk",
+          "tableFrom": "service_call_events",
+          "tableTo": "users",
+          "columnsFrom": [
+            "performed_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

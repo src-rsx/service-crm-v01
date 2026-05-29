@@ -23,7 +23,7 @@ export const users = pgTable("users", {
 
   updatedAt: timestamp("updated_at").defaultNow(),
 
-  tenantId: integer("tenant_id")
+  tenantId: uuid("tenant_id")
   .references(() => tenants.id)
   .notNull(),
 });

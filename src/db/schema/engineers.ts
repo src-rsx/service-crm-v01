@@ -1,40 +1,41 @@
 import {
   pgTable,
   serial,
+  integer,
   varchar,
   boolean,
   timestamp,
   uuid
 } from "drizzle-orm/pg-core";
 
-export const tenants = pgTable("tenants", {
+import { tenants } from "./tenants";
+
+export const engineers = pgTable("engineers", {
   id: uuid("id").defaultRandom().primaryKey(),
 
-  tenantCode: varchar("tenant_code", {
-    length: 50,
-  })
-    .notNull()
-    .unique(),
+  tenantId: uuid("tenant_id")
+    .references(() => tenants.id)
+    .notNull(),
 
-  companyName: varchar("company_name", {
+  employeeCode: varchar("employee_code", {
+    length: 50,
+  }),
+
+  name: varchar("name", {
     length: 255,
   }).notNull(),
 
-  contactPerson: varchar("contact_person", {
-    length: 255,
+  mobile: varchar("mobile", {
+    length: 20,
   }),
 
   email: varchar("email", {
     length: 255,
   }),
 
-  mobile: varchar("mobile", {
-    length: 20,
+  designation: varchar("designation", {
+    length: 100,
   }),
-
-  subscriptionPlan: varchar("subscription_plan", {
-    length: 50,
-  }).default("TRIAL"),
 
   isActive: boolean("is_active")
     .default(true)
