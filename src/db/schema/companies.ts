@@ -4,7 +4,9 @@ import {
   varchar,
   text,
   timestamp,
+  integer
 } from "drizzle-orm/pg-core";
+import { tenants } from "./tenants";
 
 export const companies = pgTable("companies", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -52,4 +54,8 @@ export const companies = pgTable("companies", {
   createdAt: timestamp("created_at").defaultNow(),
 
   updatedAt: timestamp("updated_at").defaultNow(),
+
+  tenantId: integer("tenant_id")
+  .references(() => tenants.id)
+  .notNull(),
 });

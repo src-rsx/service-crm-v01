@@ -15,6 +15,20 @@
       "when": 1780053860734,
       "tag": "0001_nifty_microbe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780054353563,
+      "tag": "0002_glossy_blacklash",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780054617099,
+      "tag": "0003_parallel_steel_serpent",
+      "breakpoints": true
     }
   ]
 }
