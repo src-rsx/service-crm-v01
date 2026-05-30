@@ -15,5 +15,11 @@ export const createCompanySchema = z.object({
   remarks: z.string().optional(),
 });
 
+export const updateCompanySchema =
+  createCompanySchema.partial();
+
 export type CreateCompanySchema =
   z.infer<typeof createCompanySchema>;
+
+export type UpdateCompanyInput =
+  z.infer<typeof updateCompanySchema>;
