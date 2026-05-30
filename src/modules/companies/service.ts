@@ -1,14 +1,50 @@
 import { companiesRepository } from "./repository";
 import { UpdateCompanyInput } from "./schemas";
 import { CreateCompanyInput } from "./types";
+import { buildPagination } from "@/lib/api/pagination";
+
+interface GetCompaniesOptions {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}
 
 export const companiesService = {
   async getCompanies(
-    tenantId: string
+    tenantId: string,
+    options?: GetCompaniesOptions
   ) {
-    return companiesRepository.findAllByTenant(
-      tenantId
-    );
+    const page = options?.page ?? 1;
+    const pageSize = options?.pageSize ?? 20;
+    const search = options?.search ?? "";
+
+    const companies =
+      await companiesRepository.findAllByTenant(
+        tenantId,
+        {
+          page,
+          pageSize,
+          search,
+        }
+      );
+
+    const total =
+      await companiesRepository.countByTenant(
+        tenantId,
+        search
+      );
+
+    const pagination =
+      buildPagination(
+        page,
+        pageSize,
+        total
+      );
+
+    return {
+      companies,
+      pagination,
+    };
   },
 
   async createCompany(
