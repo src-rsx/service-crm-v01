@@ -19,6 +19,9 @@ import { sitesRepository }
 import { assetsRepository }
   from "@/modules/assets/repository";
 
+import { engineersRepository }
+  from "@/modules/engineers/repository";
+
 interface GetServiceCallsOptions {
   page?: number;
   pageSize?: number;
@@ -213,4 +216,40 @@ export const serviceCallsService = {
       data
     );
   },
+
+  async assignEngineer(
+  tenantId: string,
+  serviceCallId: string,
+  engineerId: string
+) {
+  const serviceCall =
+    await serviceCallsRepository.findById(
+      tenantId,
+      serviceCallId
+    );
+
+  if (!serviceCall) {
+    throw new Error(
+      "Service call not found"
+    );
+  }
+
+  const engineer =
+    await engineersRepository.findById(
+      tenantId,
+      engineerId
+    );
+
+  if (!engineer) {
+    throw new Error(
+      "Engineer not found"
+    );
+  }
+
+  return serviceCallsRepository.assignEngineer(
+    tenantId,
+    serviceCallId,
+    engineerId
+  );
+},
 };

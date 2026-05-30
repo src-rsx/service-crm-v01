@@ -190,6 +190,40 @@ export const serviceCallsRepository = {
         return serviceCall;
     },
 
+    async assignEngineer(
+  tenantId: string,
+  serviceCallId: string,
+  engineerId: string
+) {
+  const [serviceCall] =
+    await db
+      .update(serviceCalls)
+      .set({
+        assignedEngineerId:
+          engineerId,
+
+        status: "ASSIGNED",
+
+        updatedAt:
+          new Date(),
+      })
+      .where(
+        and(
+          eq(
+            serviceCalls.id,
+            serviceCallId
+          ),
+          eq(
+            serviceCalls.tenantId,
+            tenantId
+          )
+        )
+      )
+      .returning();
+
+  return serviceCall;
+},
+
     async getLatestCallNumber(
         tenantId: string
     ) {
