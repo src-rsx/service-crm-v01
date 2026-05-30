@@ -7,6 +7,8 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { tenants } from "../core/tenants";
+import { companies } from "../crm/companies";
+import { sites } from "./sites";
 import { assets } from "./assets";
 import { engineers } from "./engineers";
 import { users } from "../auth/users";
@@ -20,13 +22,21 @@ export const serviceCalls = pgTable("service_calls", {
     .references(() => tenants.id)
     .notNull(),
 
-  assetId: uuid("asset_id")
-    .references(() => assets.id)
+  companyId: uuid("company_id")
+    .references(() => companies.id)
     .notNull(),
+
+  siteId: uuid("site_id")
+    .references(() => sites.id)
+    .notNull(),
+
+  assetId: uuid("asset_id")
+    .references(() => assets.id),
 
   callNumber: varchar("call_number", {
     length: 50,
-  }).notNull()
+  })
+    .notNull()
     .unique(),
 
   customerReferenceNumber: varchar(
@@ -36,12 +46,23 @@ export const serviceCalls = pgTable("service_calls", {
     }
   ),
 
+  callType: varchar("call_type", {
+    length: 30,
+  })
+    .default("BREAKDOWN")
+    .notNull(),
+
+  source: varchar("source", {
+    length: 30,
+  })
+    .default("PHONE")
+    .notNull(),
+
   subject: varchar("subject", {
     length: 500,
   }).notNull(),
 
   description: text("description"),
-  resolutionRemarks: text("resolution_remarks"),
 
   priority: varchar("priority", {
     length: 20,
@@ -55,13 +76,28 @@ export const serviceCalls = pgTable("service_calls", {
     .default("OPEN")
     .notNull(),
 
-  assignedEngineerId: uuid(
-    "assigned_engineer_id"
-  ).references(() => engineers.id),
+  reportedBy: varchar("reported_by", {
+    length: 255,
+  }),
+
+  reportedMobile: varchar(
+    "reported_mobile",
+    {
+      length: 20,
+    }
+  ),
 
   reportedByUserId: uuid(
     "reported_by_user_id"
   ).references(() => users.id),
+
+  assignedEngineerId: uuid(
+    "assigned_engineer_id"
+  ).references(() => engineers.id),
+
+  resolutionRemarks: text(
+    "resolution_remarks"
+  ),
 
   openedAt: timestamp("opened_at")
     .defaultNow()
