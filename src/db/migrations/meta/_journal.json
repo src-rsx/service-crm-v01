@@ -57,6 +57,13 @@
       "when": 1780123206428,
       "tag": "0007_stormy_zuras",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1780141529275,
+      "tag": "0008_legal_lady_ursula",
+      "breakpoints": true
     }
   ]
 }

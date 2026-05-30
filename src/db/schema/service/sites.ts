@@ -68,4 +68,15 @@ export const sites = pgTable("sites", {
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .notNull(),
+
+  remarks: text("remarks"),
+
+  latitude: varchar("latitude", {
+    length: 50,
+  }),
+
+  longitude: varchar("longitude", {
+    length: 50,
+  })
+  
 });
