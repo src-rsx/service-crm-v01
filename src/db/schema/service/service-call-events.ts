@@ -7,7 +7,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { serviceCalls } from "./service-calls";
-import { users } from "./users";
+import { users } from "../auth/users";
 
 export const serviceCallEvents = pgTable(
   "service_call_events",

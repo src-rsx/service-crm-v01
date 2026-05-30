@@ -6,10 +6,10 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 
-import { tenants } from "./tenants";
+import { tenants } from "../core/tenants";
 import { assets } from "./assets";
 import { engineers } from "./engineers";
-import { users } from "./users";
+import { users } from "../auth/users";
 
 export const serviceCalls = pgTable("service_calls", {
   id: uuid("id")

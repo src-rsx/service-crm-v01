@@ -8,8 +8,8 @@ import {
   date,
 } from "drizzle-orm/pg-core";
 
-import { tenants } from "./tenants";
-import { companies } from "./companies";
+import { tenants } from "../core/tenants";
+import { companies } from "../crm/companies";
 import { sites } from "./sites";
 import { manufacturers } from "./manufacturers";
 

@@ -1,16 +1,9 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-export * from "./tenants";
-export * from "./users";
-export * from "./companies";
-export * from "./engineers";
-export * from "./manufacturers";
-export * from "./assets";
-export * from "./sites";
-export * from "./service-calls";
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-export const db = drizzle(pool);
+export * from "./auth/users";
+export * from "./core/tenants";
+export * from "./crm/companies";
+export * from "./service/sites";
+export * from "./service/assets";
+export * from "./service/engineers";
+export * from "./service/manufacturers";
+export * from "./service/service-calls";
+export * from "./service/service-call-events";

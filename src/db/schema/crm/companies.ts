@@ -6,7 +6,7 @@ import {
   timestamp,
   integer
 } from "drizzle-orm/pg-core";
-import { tenants } from "./tenants";
+import { tenants } from "../core/tenants";
 
 export const companies = pgTable("companies", {
   id: uuid("id").defaultRandom().primaryKey(),

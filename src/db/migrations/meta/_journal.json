@@ -36,6 +36,20 @@
       "when": 1780071793812,
       "tag": "0004_stormy_steve_rogers",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1780076052600,
+      "tag": "0005_redundant_wallop",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780076287967,
+      "tag": "0006_aberrant_jack_murdock",
+      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,7 @@ import {
   boolean,
   integer
 } from "drizzle-orm/pg-core";
-import { tenants } from "./tenants";
+import { tenants } from "../core/tenants";
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -14,6 +14,12 @@ export const users = pgTable("users", {
   name: varchar("name", { length: 255 }).notNull(),
 
   email: varchar("email", { length: 255 }).notNull().unique(),
+  
+  passwordHash: varchar("password_hash", {
+    length: 255,
+  }).notNull(),
+
+  lastLoginAt: timestamp("last_login_at"),
 
   role: varchar("role", { length: 50 }).notNull(),
 
