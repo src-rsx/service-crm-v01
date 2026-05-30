@@ -4,7 +4,8 @@ import {
   varchar,
   text,
   timestamp,
-  integer
+  integer,
+  boolean
 } from "drizzle-orm/pg-core";
 import { tenants } from "../core/tenants";
 
@@ -58,4 +59,9 @@ export const companies = pgTable("companies", {
   tenantId: uuid("tenant_id")
   .references(() => tenants.id)
   .notNull(),
+
+  isActive: boolean("is_active")
+  .default(true)
+  .notNull(),
+  
 });
