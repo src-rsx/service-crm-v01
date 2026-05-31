@@ -19,5 +19,11 @@ export default auth((req) => {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/companies/:path*",
+    "/sites/:path*",
+    "/assets/:path*",
+    "/engineers/:path*",
+    "/service-calls/:path*",
+    "/settings/:path*",
   ],
 };
