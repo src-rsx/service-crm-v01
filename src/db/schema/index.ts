@@ -8,3 +8,4 @@ export * from "./service/engineers";
 export * from "./service/manufacturers";
 export * from "./service/service-calls";
 export * from "./service/service-call-events";
+export * from "./service/service-call-visits";

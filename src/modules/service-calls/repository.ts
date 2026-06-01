@@ -17,6 +17,8 @@ import {
     UpdateServiceCallInput,
 } from "./types";
 
+import { engineers } from "@/db/schema";
+
 interface FindServiceCallsOptions {
     page?: number;
     pageSize?: number;
@@ -24,65 +26,88 @@ interface FindServiceCallsOptions {
 }
 
 export const serviceCallsRepository = {
-    async findAllByTenant(
-        tenantId: string,
-        options?: FindServiceCallsOptions
-    ) {
-        const page = options?.page ?? 1;
+async findAllByTenant(
+  tenantId: string,
+  options?: FindServiceCallsOptions
+) {
+  const page =
+    options?.page ?? 1;
 
-        const pageSize =
-            options?.pageSize ?? 20;
+  const pageSize =
+    options?.pageSize ?? 20;
 
-        const offset =
-            (page - 1) * pageSize;
+  const offset =
+    (page - 1) * pageSize;
 
-        const filters = [
-            eq(
-                serviceCalls.tenantId,
-                tenantId
-            ),
-        ];
+  const filters = [
+    eq(
+      serviceCalls.tenantId,
+      tenantId
+    ),
+  ];
 
-        if (options?.search?.trim()) {
-            filters.push(
-                or(
-                    ilike(
-                        serviceCalls.callNumber,
-                        `%${options.search}%`
-                    ),
-                    ilike(
-                        serviceCalls.subject,
-                        `%${options.search}%`
-                    ),
-                    ilike(
-                        serviceCalls.description,
-                        `%${options.search}%`
-                    ),
-                    ilike(
-                        serviceCalls.reportedBy,
-                        `%${options.search}%`
-                    )
-                )!
-            );
-        }
+  if (options?.search?.trim()) {
+    filters.push(
+      or(
+        ilike(
+          serviceCalls.callNumber,
+          `%${options.search}%`
+        ),
+        ilike(
+          serviceCalls.subject,
+          `%${options.search}%`
+        ),
+        ilike(
+          serviceCalls.description,
+          `%${options.search}%`
+        ),
+        ilike(
+          serviceCalls.reportedBy,
+          `%${options.search}%`
+        )
+      )!
+    );
+  }
 
-        return db.query.serviceCalls.findMany({
-            where: and(...filters),
+  return db
+    .select({
+      id: serviceCalls.id,
 
-            orderBy: (
-                serviceCalls,
-                { desc }
-            ) => [
-                    desc(
-                        serviceCalls.createdAt
-                    ),
-                ],
+      callNumber:
+        serviceCalls.callNumber,
 
-            limit: pageSize,
+      subject:
+        serviceCalls.subject,
 
-            offset,
-        });
-    },
+      priority:
+        serviceCalls.priority,
+
+      status:
+        serviceCalls.status,
+
+      assignedEngineerId:
+        serviceCalls.assignedEngineerId,
+
+      engineerName:
+        engineers.name,
+    })
+    .from(serviceCalls)
+    .leftJoin(
+      engineers,
+      eq(
+        serviceCalls.assignedEngineerId,
+        engineers.id
+      )
+    )
+    .where(and(...filters))
+    .orderBy(
+      desc(
+        serviceCalls.createdAt
+      )
+    )
+    .limit(pageSize)
+    .offset(offset);
+},
 
     async countByTenant(
         tenantId: string,
@@ -206,6 +231,44 @@ export const serviceCallsRepository = {
 
         updatedAt:
           new Date(),
+      })
+      .where(
+        and(
+          eq(
+            serviceCalls.id,
+            serviceCallId
+          ),
+          eq(
+            serviceCalls.tenantId,
+            tenantId
+          )
+        )
+      )
+      .returning();
+
+  return serviceCall;
+},
+
+async updateStatus(
+  tenantId: string,
+  serviceCallId: string,
+  status: string
+) {
+  const [serviceCall] =
+    await db
+      .update(serviceCalls)
+      .set({
+        status,
+
+        updatedAt:
+          new Date(),
+
+        ...(status === "CLOSED"
+          ? {
+              closedAt:
+                new Date(),
+            }
+          : {}),
       })
       .where(
         and(

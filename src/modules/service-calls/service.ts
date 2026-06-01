@@ -22,6 +22,10 @@ import { assetsRepository }
 import { engineersRepository }
   from "@/modules/engineers/repository";
 
+import {
+  serviceCallVisitsService,
+} from "@/modules/service-call-visits/service";
+
 interface GetServiceCallsOptions {
   page?: number;
   pageSize?: number;
@@ -160,18 +164,34 @@ export const serviceCallsService = {
         latest
       );
 
-    return serviceCallsRepository.create({
-      ...data,
+    const serviceCall =
+      await serviceCallsRepository.create({
+        ...data,
 
-      tenantId,
+        tenantId,
 
-      callNumber,
+        callNumber,
 
-      status: "OPEN",
+        status:
+          data.assignedEngineerId
+            ? "ASSIGNED"
+            : "OPEN",
 
-      openedAt:
-        new Date(),
-    });
+        openedAt:
+          new Date(),
+      });
+
+    if (
+      data.assignedEngineerId
+    ) {
+      await serviceCallVisitsService.createVisit(
+        tenantId,
+        serviceCall.id,
+        data.assignedEngineerId!
+      );
+    }
+
+    return serviceCall;
   },
 
   async getServiceCallById(
@@ -218,38 +238,71 @@ export const serviceCallsService = {
   },
 
   async assignEngineer(
-  tenantId: string,
-  serviceCallId: string,
-  engineerId: string
-) {
-  const serviceCall =
-    await serviceCallsRepository.findById(
-      tenantId,
-      serviceCallId
-    );
+    tenantId: string,
+    serviceCallId: string,
+    engineerId: string
+  ) {
+    const serviceCall =
+      await serviceCallsRepository.findById(
+        tenantId,
+        serviceCallId
+      );
 
-  if (!serviceCall) {
-    throw new Error(
-      "Service call not found"
-    );
-  }
+    if (!serviceCall) {
+      throw new Error(
+        "Service call not found"
+      );
+    }
 
-  const engineer =
-    await engineersRepository.findById(
+    const engineer =
+      await engineersRepository.findById(
+        tenantId,
+        engineerId
+      );
+
+    if (!engineer) {
+      throw new Error(
+        "Engineer not found"
+      );
+    }
+
+    const updatedCall =
+      await serviceCallsRepository.assignEngineer(
+        tenantId,
+        serviceCallId,
+        engineerId
+      );
+
+    await serviceCallVisitsService.createVisit(
       tenantId,
+      serviceCallId,
       engineerId
     );
 
-  if (!engineer) {
-    throw new Error(
-      "Engineer not found"
-    );
-  }
+    return updatedCall;
+  },
 
-  return serviceCallsRepository.assignEngineer(
-    tenantId,
-    serviceCallId,
-    engineerId
-  );
-},
+  async updateStatus(
+    tenantId: string,
+    serviceCallId: string,
+    status: string
+  ) {
+    const serviceCall =
+      await serviceCallsRepository.findById(
+        tenantId,
+        serviceCallId
+      );
+
+    if (!serviceCall) {
+      throw new Error(
+        "Service call not found"
+      );
+    }
+
+    return serviceCallsRepository.updateStatus(
+      tenantId,
+      serviceCallId,
+      status
+    );
+  },
 };

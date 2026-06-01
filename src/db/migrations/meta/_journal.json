@@ -71,6 +71,27 @@
       "when": 1780157957477,
       "tag": "0009_strange_saracen",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1780234012666,
+      "tag": "0010_even_squadron_sinister",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1780236728184,
+      "tag": "0011_plain_solo",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1780239396429,
+      "tag": "0012_cuddly_impossible_man",
+      "breakpoints": true
     }
   ]
 }

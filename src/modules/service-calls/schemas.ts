@@ -1,37 +1,37 @@
 import { z } from "zod";
 
 export const createServiceCallSchema =
-    z.object({
-        companyId: z.string().uuid(),
+  z.object({
+    companyId: z.string().uuid(),
 
-        siteId: z.string().uuid(),
+    siteId: z.string().uuid(),
 
-        assetId: z
-            .string()
-            .uuid()
-            .optional(),
+    assetId: z.string().uuid().optional(),
 
-        customerReferenceNumber:
-            z.string().optional(),
+    assignedEngineerId:
+      z.string().uuid().optional(),
 
-        callType: z.string().optional(),
+    customerReferenceNumber:
+      z.string().optional(),
 
-        source: z.string().optional(),
+    callType: z.string().optional(),
 
-        subject: z.string().min(1),
+    source: z.string().optional(),
 
-        description:
-            z.string().optional(),
+    subject: z.string().min(1),
 
-        priority: z.string().optional(),
+    description:
+      z.string().optional(),
 
-        reportedBy:
-            z.string().optional(),
+    priority: z.string().optional(),
 
-        reportedMobile:
-            z.string().optional(),
-    });
+    reportedBy:
+      z.string().optional(),
 
+    reportedMobile:
+      z.string().optional(),
+  });
+  
 export const updateServiceCallSchema =
     createServiceCallSchema
         .partial()
@@ -49,4 +49,15 @@ export const updateServiceCallSchema =
 export const assignEngineerSchema =
   z.object({
     engineerId: z.string().uuid(),
+  });
+
+export const updateStatusSchema =
+  z.object({
+    status: z.enum([
+      "OPEN",
+      "ASSIGNED",
+      "IN_PROGRESS",
+      "RESOLVED",
+      "CLOSED",
+    ]),
   });

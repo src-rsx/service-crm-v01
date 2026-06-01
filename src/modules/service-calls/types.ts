@@ -9,7 +9,7 @@ export interface CreateServiceCallInput {
   siteId: string;
 
   assetId?: string;
-
+  assignedEngineerId?: string;
   customerReferenceNumber?: string;
 
   callType?: string;
