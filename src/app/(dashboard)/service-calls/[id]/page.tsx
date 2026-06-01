@@ -7,7 +7,16 @@ import {
 import {
   serviceCallVisitsService,
 } from "@/modules/service-call-visits/service";
+
 import { CloseCallButton } from "@/components/service-calls/close-call-button";
+
+import {
+  engineersService,
+} from "@/modules/engineers/service";
+
+import {
+  ReassignEngineer,
+} from "@/components/service-calls/reassign-engineer";
 
 interface Props {
   params: Promise<{
@@ -44,6 +53,22 @@ export default async function ServiceCallDetailPage(
       id
     );
 
+  const engineersResult =
+    await engineersService.getEngineers(
+      session.user.tenantId,
+      {
+        page: 1,
+        pageSize: 100,
+      }
+    );
+
+  const visitHistory =
+    await serviceCallVisitsService
+      .getVisitHistory(
+        session.user.tenantId,
+        id
+      );
+
   return (
     <div className="space-y-6">
 
@@ -61,6 +86,36 @@ export default async function ServiceCallDetailPage(
         <h2 className="font-semibold mb-4">
           Call Information
         </h2>
+
+        {
+          [
+            "OPEN",
+            "ASSIGNED",
+            "IN_PROGRESS",
+          ].includes(call.status) && (
+
+            <div className="border rounded-lg p-4">
+
+              <h2 className="font-semibold mb-4">
+                Reassign Engineer
+              </h2>
+
+              <ReassignEngineer
+                serviceCallId={call.id}
+                engineers={
+                  engineersResult.engineers.map(
+                    (engineer) => ({
+                      id: engineer.id,
+                      name: engineer.name,
+                    })
+                  )
+                }
+              />
+
+            </div>
+
+          )
+        }
 
         <div className="grid grid-cols-2 gap-4">
 
@@ -92,9 +147,77 @@ export default async function ServiceCallDetailPage(
             {call.reportedMobile ?? "-"}
           </div>
 
+          <div>
+            <strong>
+              Assigned Engineer:
+            </strong>{" "}
+            {call.assignedEngineer?.name ?? "-"}
+          </div>
+
         </div>
       </div>
 
+      <div className="border rounded-lg p-4">
+
+        <h2 className="font-semibold mb-4">
+          Assignment History
+        </h2>
+
+        <div className="space-y-4">
+
+          {visitHistory.map(
+            (visit) => (
+              <div
+                key={visit.id}
+                className="border-b pb-3"
+              >
+                <div>
+                  <strong>
+                    Engineer:
+                  </strong>{" "}
+                  {visit.engineer?.name ??
+                    visit.engineerId}
+                </div>
+
+                <div>
+                  Assigned:
+                  {" "}
+                  {visit.createdAt
+                    ?.toLocaleString()}
+                </div>
+
+                {visit.reassignedAt && (
+                  <div>
+                    Reassigned:
+                    {" "}
+                    {visit.reassignedAt
+                      ?.toLocaleString()}
+                  </div>
+                )}
+
+                {visit.reassignmentRemarks && (
+                  <div>
+                    Remarks:
+                    {" "}
+                    {
+                      visit.reassignmentRemarks
+                    }
+                  </div>
+                )}
+
+                <div>
+                  Status:
+                  {" "}
+                  {visit.status}
+                </div>
+
+              </div>
+            )
+          )}
+
+        </div>
+
+      </div>
       <div className="border rounded-lg p-4">
         <h2 className="font-semibold mb-4">
           Visit Timeline
@@ -173,44 +296,44 @@ export default async function ServiceCallDetailPage(
       {call.status === "RESOLVED" && (
         <div className="border rounded-lg p-4">
 
-            <h2 className="font-semibold mb-4">
+          <h2 className="font-semibold mb-4">
             Service Call Closure
-            </h2>
+          </h2>
 
-            <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-4">
             Engineer has completed the work.
             Review the details above and
             close the ticket.
-            </p>
+          </p>
 
-            <CloseCallButton
-              id={call.id}
-            />
+          <CloseCallButton
+            id={call.id}
+          />
 
         </div>
-    )}
+      )}
 
-    {call.status === "CLOSED" && (
+      {call.status === "CLOSED" && (
         <div className="border rounded-lg p-4">
 
-            <h2 className="font-semibold">
+          <h2 className="font-semibold">
             Ticket Closed
-            </h2>
+          </h2>
 
-            <p className="text-muted-foreground">
+          <p className="text-muted-foreground">
             Closed on:
 
             {" "}
 
             {call.closedAt
-                ? new Date(
-                    call.closedAt
-                ).toLocaleString()
-                : "-"}
-            </p>
+              ? new Date(
+                call.closedAt
+              ).toLocaleString()
+              : "-"}
+          </p>
 
         </div>
-        )}
+      )}
 
     </div>
   );

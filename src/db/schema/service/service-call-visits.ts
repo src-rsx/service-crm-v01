@@ -143,5 +143,13 @@ export const serviceCallVisits =
                 doublePrecision(
                     "checkout_longitude"
                 ),
+
+            reassignedAt: timestamp(
+                "reassigned_at"
+            ),
+
+            reassignmentRemarks: text(
+                "reassignment_remarks"
+            ),
         }
     );

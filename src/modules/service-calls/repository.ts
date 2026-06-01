@@ -172,16 +172,20 @@ async findAllByTenant(
         serviceCallId: string
     ) {
         return db.query.serviceCalls.findFirst({
-            where: and(
-                eq(
-                    serviceCalls.id,
-                    serviceCallId
-                ),
-                eq(
-                    serviceCalls.tenantId,
-                    tenantId
-                )
+          where: and(
+            eq(
+              serviceCalls.id,
+              serviceCallId
             ),
+            eq(
+              serviceCalls.tenantId,
+              tenantId
+            )
+          ),
+
+          with: {
+            assignedEngineer: true,
+          },
         });
     },
 

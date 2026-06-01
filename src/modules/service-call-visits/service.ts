@@ -160,4 +160,15 @@ async saveNotes(
     data
   );
 },
+
+async getVisitHistory(
+  tenantId: string,
+  serviceCallId: string
+) {
+  return serviceCallVisitsRepository
+    .findByServiceCallHistory(
+      tenantId,
+      serviceCallId
+    );
+},
 };

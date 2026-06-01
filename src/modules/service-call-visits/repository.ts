@@ -114,16 +114,14 @@ export const
     return visit;
   },
 
-  async findByServiceCall(
+async findByServiceCall(
   tenantId: string,
   serviceCallId: string
 ) {
   const [visit] =
     await db
       .select()
-      .from(
-        serviceCallVisits
-      )
+      .from(serviceCallVisits)
       .where(
         and(
           eq(
@@ -136,8 +134,44 @@ export const
           )
         )
       )
+      .orderBy(
+        desc(
+          serviceCallVisits.createdAt
+        )
+      )
       .limit(1);
 
   return visit;
+},
+
+async findByServiceCallHistory(
+  tenantId: string,
+  serviceCallId: string
+) {
+  return db.query.serviceCallVisits.findMany({
+    where: and(
+      eq(
+        serviceCallVisits.tenantId,
+        tenantId
+      ),
+      eq(
+        serviceCallVisits.serviceCallId,
+        serviceCallId
+      )
+    ),
+
+    with: {
+      engineer: true,
+    },
+
+    orderBy: (
+      visits,
+      { desc }
+    ) => [
+      desc(
+        visits.createdAt
+      ),
+    ],
+  });
 },
 };

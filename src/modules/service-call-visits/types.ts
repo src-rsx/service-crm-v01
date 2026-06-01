@@ -38,4 +38,7 @@ export interface UpdateVisitInput {
   
   partsUsed?: string;
   rootCause?: string;
+
+  reassignedAt?: Date;
+  reassignmentRemarks?: string;
 }

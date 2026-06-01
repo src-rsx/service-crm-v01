@@ -26,6 +26,10 @@ import {
   serviceCallVisitsService,
 } from "@/modules/service-call-visits/service";
 
+import {
+  serviceCallVisitsRepository,
+} from "@/modules/service-call-visits/repository";
+
 interface GetServiceCallsOptions {
   page?: number;
   pageSize?: number;
@@ -305,4 +309,50 @@ export const serviceCallsService = {
       status
     );
   },
+
+async reassignEngineer(
+  tenantId: string,
+  serviceCallId: string,
+  engineerId: string,
+  remarks?: string
+) {
+  const currentVisit =
+    await serviceCallVisitsRepository.findLatestByCall(
+      tenantId,
+      serviceCallId
+    );
+
+  if (
+    currentVisit &&
+    currentVisit.status !== "RESOLVED"
+  ) {
+    await serviceCallVisitsRepository.update(
+      currentVisit.id,
+      {
+        status: "REASSIGNED",
+
+        reassignedAt:
+          new Date(),
+
+        reassignmentRemarks:
+          remarks,
+      }
+    );
+  }
+
+  await serviceCallsRepository.update(
+    tenantId,
+    serviceCallId,
+    {
+      assignedEngineerId: engineerId,
+      status: "ASSIGNED",
+    }
+  );
+
+  await serviceCallVisitsService.createVisit(
+    tenantId,
+    serviceCallId,
+    engineerId
+  );
+}
 };

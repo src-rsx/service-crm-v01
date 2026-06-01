@@ -51,9 +51,21 @@ export const companiesRelations = relations(
 export const serviceCallsRelations =
   relations(
     serviceCalls,
-    ({ many }) => ({
+    ({ many, one }) => ({
       visits: many(
         serviceCallVisits
+      ),
+
+      assignedEngineer: one(
+        engineers,
+        {
+          fields: [
+            serviceCalls.assignedEngineerId,
+          ],
+          references: [
+            engineers.id,
+          ],
+        }
       ),
     })
   );
