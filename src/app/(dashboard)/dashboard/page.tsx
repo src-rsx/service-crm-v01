@@ -16,17 +16,18 @@ import { serviceCallsService }
   from "@/modules/service-calls/service";
 
 import {
-  Building2,
-  MapPinned,
+  Plus,
   Wrench,
   Users,
   ClipboardList,
   ClipboardCheck,
   UserCheck,
+  MapPinned,
   UserX,
   Activity,
   CircleDashed,
   CheckCircle2,
+  UserRoundCheck,
 } from "lucide-react";
 
 import {
@@ -35,6 +36,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+import { MetricCard } from "@/components/dashboard/metric-card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ActionCard } from "@/components/dashboard/action-card";
+import { StatusBadge } from "@/components/dashboard/status-badge";
+import { WorkloadList }
+  from "@/components/dashboard/workload-list";
+
 
 export default async function DashboardPage() {
   const session =
@@ -109,133 +119,90 @@ export default async function DashboardPage() {
         "ASSIGNED"
     ).length;
 
-    const busyEngineers =
-      new Set(
-        serviceCalls.serviceCalls
-          .filter(
-            (call: any) =>
-              call.assignedEngineerId
-          )
-          .map(
-            (call: any) =>
-              call.assignedEngineerId
-          )
-      ).size;
-
-      const engineerWorkload =
-        Object.values(
-          serviceCalls.serviceCalls.reduce(
-            (
-              acc: any,
-              call: any
-            ) => {
-              if (
-                !call.assignedEngineerId
-              ) {
-                return acc;
-              }
-
-              const key =
-                call.assignedEngineerId;
-
-              if (!acc[key]) {
-                acc[key] = {
-                  engineerName:
-                    call.engineerName ??
-                    "Unknown",
-
-                  activeCalls: 0,
-                };
-              }
-
-              acc[key].activeCalls++;
-
-              return acc;
-            },
-            {}
-          )
+  const busyEngineers =
+    new Set(
+      serviceCalls.serviceCalls
+        .filter(
+          (call: any) =>
+            call.assignedEngineerId
         )
-          .sort(
-            (
-              a: any,
-              b: any
-            ) =>
-              b.activeCalls -
-              a.activeCalls
-          )
-          .slice(0, 10);
+        .map(
+          (call: any) =>
+            call.assignedEngineerId
+        )
+    ).size;
 
-const availableEngineers =
-  engineers.pagination.total -
-  busyEngineers;
+  const engineerWorkload =
+    Object.values(
+      serviceCalls.serviceCalls.reduce(
+        (
+          acc: any,
+          call: any
+        ) => {
+          if (
+            !call.assignedEngineerId
+          ) {
+            return acc;
+          }
+
+          const key =
+            call.assignedEngineerId;
+
+          if (!acc[key]) {
+            acc[key] = {
+              engineerName:
+                call.engineerName ??
+                "Unknown",
+
+              activeCalls: 0,
+            };
+          }
+
+          acc[key].activeCalls++;
+
+          return acc;
+        },
+        {}
+      )
+    )
+      .sort(
+        (
+          a: any,
+          b: any
+        ) =>
+          b.activeCalls -
+          a.activeCalls
+      )
+      .slice(0, 10);
+
+  const availableEngineers =
+    engineers.pagination.total -
+    busyEngineers;
 
   const inProgressCalls =
-  serviceCalls.serviceCalls.filter(
-    (call: any) =>
-      call.status ===
-      "IN_PROGRESS"
-  ).length;
+    serviceCalls.serviceCalls.filter(
+      (call: any) =>
+        call.status ===
+        "IN_PROGRESS"
+    ).length;
 
-const closedCalls =
-  serviceCalls.serviceCalls.filter(
-    (call: any) =>
-      call.status ===
-      "CLOSED"
-  ).length;
-
-const avgLoad =
-  busyEngineers > 0
-    ? (
-        assignedCalls /
-        busyEngineers
-      ).toFixed(1)
-    : "0";
-
-  const cards = [
-    {
-      title: "Companies",
-      value:
-        companies.pagination
-          .total,
-    },
-    {
-      title: "Sites",
-      value:
-        sites.pagination.total,
-    },
-    {
-      title: "Assets",
-      value:
-        assets.pagination.total,
-    },
-    {
-      title: "Engineers",
-      value:
-        engineers.pagination
-          .total,
-    },
-    {
-      title: "Open Calls",
-      value: openCalls,
-    },
-    {
-      title:
-        "Assigned Calls",
-      value:
-        assignedCalls,
-    },
-  ];
+  const closedCalls =
+    serviceCalls.serviceCalls.filter(
+      (call: any) =>
+        call.status ===
+        "CLOSED"
+    ).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">
           Welcome back, {session.user.name}
         </h1>
 
-        <p className="text-muted-foreground">
-          Monitor companies, sites, assets,
-          engineers and service calls.
+        <p className="text-muted-foreground text-base mt-2">
+          Track service calls, engineer activity,
+          assets and customer sites from a single dashboard.
         </p>
       </div>
 
@@ -247,357 +214,172 @@ const avgLoad =
         </select>
       </div>
 
-    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Companies
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <div className="text-3xl font-bold">
-            {companies.pagination.total}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPinned className="h-5 w-5" />
-            Sites
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <div className="text-3xl font-bold">
-            {sites.pagination.total}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Wrench className="h-5 w-5" />
-            Assets
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <div className="text-3xl font-bold">
-            {assets.pagination.total}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Engineers
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <div className="text-3xl font-bold">
-            {engineers.pagination.total}
-          </div>
-        </CardContent>
-      </Card> */}
-
-      {/* <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5" />
-            Open Calls
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <div className="text-3xl font-bold">
-            {openCalls}
-          </div>
-        </CardContent>
-      </Card> */}
-
-      {/* <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ClipboardCheck className="h-5 w-5" />
-            Assigned Calls
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent>
-          <div className="text-3xl font-bold">
-            {assignedCalls}
-          </div>
-        </CardContent>
-      </Card> */}
-
-    </div>
-
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">
-        Engineer Utilization
-      </h2>
-
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Total Engineers
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {engineers.pagination.total}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5" />
-              Busy Engineers
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {busyEngineers}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserX className="h-5 w-5" />
-              Available Engineers
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {availableEngineers}
-            </div>
-          </CardContent>
-        </Card>
-
-      </div>
-
-    </div>
-
-    <div className="space-y-4">
-
-      <h2 className="text-xl font-semibold">
-        Call Status Distribution
-      </h2>
+      {/* HERO KPI ROW */}
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          title="Open Calls"
+          value={openCalls}
+          icon={ClipboardList}
+          accent="border-l-amber-500"
+          description="Requires attention"
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ClipboardList className="h-5 w-5" />
-              Open
-            </CardTitle>
-          </CardHeader>
+        <MetricCard
+          title="Assigned Calls"
+          value={assignedCalls}
+          icon={UserCheck}
+          accent="border-l-blue-500"
+          description="Allocated to engineers"
+        />
 
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {openCalls}
-            </div>
-          </CardContent>
-        </Card>
+        <MetricCard
+          title="Engineers"
+          value={engineers.pagination.total}
+          icon={Users}
+          accent="border-l-emerald-500"
+          description="Available workforce"
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5" />
-              Assigned
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {assignedCalls}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              In Progress
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {inProgressCalls}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5" />
-              Closed
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {closedCalls}
-            </div>
-          </CardContent>
-        </Card>
-
+        <MetricCard
+          title="Assets"
+          value={assets.pagination.total}
+          icon={Wrench}
+          accent="border-l-violet-500"
+          description="Installed equipment"
+        />
       </div>
 
-    </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            Quick Actions
+          </CardTitle>
+        </CardHeader>
 
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          Recent Service Calls
-        </CardTitle>
-      </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 
-      <CardContent>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left p-2">
-                Call No
-              </th>
+            <ActionCard
+              title="Create Service Call"
+              description="Create and assign a new service request"
+              href="/service-calls/new"
+              icon={ClipboardList}
+            />
 
-              <th className="text-left p-2">
-                Subject
-              </th>
+            <ActionCard
+              title="Add Asset"
+              description="Register customer equipment"
+              href="/assets/new"
+              icon={Wrench}
+            />
 
-              <th className="text-left p-2">
-                Status
-              </th>
+            <ActionCard
+              title="Add Site"
+              description="Create a new customer location"
+              href="/sites/new"
+              icon={MapPinned}
+            />
 
-              <th className="text-left p-2">
-                Engineer
-              </th>
-            </tr>
-          </thead>
+            <ActionCard
+              title="Add Engineer"
+              description="Onboard field engineers"
+              href="/engineers/new"
+              icon={Users}
+            />
 
-          <tbody>
-            {serviceCalls.serviceCalls
-              .slice(0, 5)
-              .map(
-                (call: any) => (
-                  <tr
-                    key={call.id}
-                    className="border-b"
-                  >
-                    <td className="p-2">
-                      {
-                        call.callNumber
-                      }
-                    </td>
+          </div>
+        </CardContent>
+      </Card>
 
-                    <td className="p-2">
-                      {
-                        call.subject
-                      }
-                    </td>
+      {/* TABLES */}
 
-                    <td className="p-2">
-                      {
-                        call.status
-                      }
-                    </td>
+      <div className="grid gap-6 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <CardTitle>
+              Recent Service Calls
+            </CardTitle>
+          </CardHeader>
 
-                    <td className="p-2">
-                      {call.engineerName ??
-                        "-"}
-                    </td>
-                  </tr>
-                )
-              )}
-          </tbody>
-        </table>
-      </CardContent>
-    </Card>
+          <CardContent>
+            <table className="w-full">
+              <thead>
+                <tr className="
+border-b
+hover:bg-muted/50
+transition-colors
+">
+                  <th className="p-2 text-left">
+                    Call No
+                  </th>
 
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          Engineer Workload
-        </CardTitle>
-      </CardHeader>
+                  <th className="p-2 text-left">
+                    Subject
+                  </th>
 
-      <CardContent>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left p-2">
-                Engineer
-              </th>
+                  <th className="p-2 text-left">
+                    Status
+                  </th>
 
-              <th className="text-left p-2">
-                Active Calls
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {engineerWorkload.map(
-              (
-                engineer: any,
-                index
-              ) => (
-                <tr
-                  key={index}
-                  className="border-b"
-                >
-                  <td className="p-2">
-                    {
-                      engineer.engineerName
-                    }
-                  </td>
-
-                  <td className="p-2">
-                    {
-                      engineer.activeCalls
-                    }
-                  </td>
+                  <th className="p-2 text-left">
+                    Engineer
+                  </th>
                 </tr>
-              )
-            )}
+              </thead>
 
-            {engineerWorkload.length ===
-              0 && (
-              <tr>
-                <td
-                  colSpan={2}
-                  className="p-4 text-center text-muted-foreground"
-                >
-                  No engineer assignments found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </CardContent>
-    </Card>
-  </div>
+              <tbody>
+                {serviceCalls.serviceCalls
+                  .slice(0, 5)
+                  .map((call: any) => (
+                    <tr
+                      key={call.id}
+                      className="
+border-b
+hover:bg-muted/50
+transition-colors
+"
+                    >
+                      <td className="p-2">
+                        {call.callNumber}
+                      </td>
+
+                      <td className="p-2">
+                        {call.subject}
+                      </td>
+
+                      <td className="p-2">
+                        <StatusBadge
+                          status={call.status}
+                        />
+                      </td>
+
+                      <td className="p-2">
+                        {call.engineerName ?? "-"}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Engineer Workload
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <WorkloadList
+              engineers={
+                engineerWorkload as any[]
+              }
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

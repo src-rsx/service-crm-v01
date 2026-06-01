@@ -22,8 +22,10 @@ export default async function DashboardLayout({
       <div className="flex flex-1 flex-col">
         <AppHeader />
 
-        <main className="flex-1 p-6">
-          {children}
+        <main className="flex-1 overflow-auto">
+          <div className="mx-auto max-w-7xl p-6">
+            {children}
+          </div>
         </main>
       </div>
     </div>

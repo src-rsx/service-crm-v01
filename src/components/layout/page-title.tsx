@@ -2,22 +2,23 @@
 
 import { usePathname } from "next/navigation";
 
-const titles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/companies": "Companies",
-  "/sites": "Sites",
-  "/assets": "Assets",
-  "/engineers": "Engineers",
-  "/service-calls": "Service Calls",
-  "/settings": "Settings",
-};
+import { pageMeta } from "@/constants/page-meta";
 
 export function PageTitle() {
   const pathname = usePathname();
 
+  const page =
+    pageMeta[pathname];
+
   return (
-    <h2 className="text-lg font-semibold">
-      {titles[pathname] ?? "CRM"}
-    </h2>
+    <div>
+      <h1 className="text-2xl font-semibold">
+        {page?.title ?? "CRM"}
+      </h1>
+
+      <p className="text-sm text-muted-foreground">
+        {page?.description}
+      </p>
+    </div>
   );
 }
