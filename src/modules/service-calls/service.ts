@@ -104,41 +104,90 @@ export const serviceCallsService = {
     tenantId: string,
     data: CreateServiceCallInput
   ) {
-    const company =
-      await companiesRepository.findById(
-        tenantId,
-        data.companyId
-      );
+    let company = null;
+    let site = null;
+    let asset = null;
 
-    if (!company) {
-      throw new Error(
-        "Company not found"
-      );
+    if (data.companyId) {
+      company =
+        await companiesRepository.findById(
+          tenantId,
+          data.companyId
+        );
+
+      if (!company) {
+        throw new Error(
+          "Company not found"
+        );
+      }
+    }
+    else {
+      company =
+        await companiesRepository.findByName(
+          tenantId,
+          data.companyName
+        );
+
+      if (!company) {
+        company =
+          await companiesRepository.create({
+            tenantId,
+
+            companyName:
+              data.companyName,
+
+            customerCode:
+              `AUTO-${Date.now()}`,
+
+            isActive: true,
+          });
+      }
+
+      data.companyId =
+        company.id;
     }
 
-    const site =
-      await sitesRepository.findById(
-        tenantId,
-        data.siteId
-      );
+    if (data.siteId) {
+      site =
+        await sitesRepository.findById(
+          tenantId,
+          data.siteId
+        );
 
-    if (!site) {
-      throw new Error(
-        "Site not found"
-      );
+      if (!site) {
+        throw new Error(
+          "Site not found"
+        );
+      }
+
+      if (
+        company &&
+        site.companyId !== company.id
+      ) {
+        throw new Error(
+          "Site does not belong to company"
+        );
+      }
+
+      if (
+        !data.companyId
+      ) {
+        data.companyId =
+          site.companyId;
+      }
     }
 
     if (
-      site.companyId !==
-      data.companyId
+      data.assetId &&
+      !data.siteId
     ) {
       throw new Error(
-        "Site does not belong to company"
+        "Site is required when asset is selected"
       );
     }
 
     if (data.assetId) {
-      const asset =
+      asset =
         await assetsRepository.findById(
           tenantId,
           data.assetId
@@ -151,8 +200,8 @@ export const serviceCallsService = {
       }
 
       if (
-        asset.siteId !==
-        data.siteId
+        site &&
+        asset.siteId !== site.id
       ) {
         throw new Error(
           "Asset does not belong to site"
@@ -179,7 +228,7 @@ export const serviceCallsService = {
         status:
           data.assignedEngineerId
             ? "ASSIGNED"
-            : "OPEN",
+            : "LOGGED",
 
         openedAt:
           new Date(),
@@ -310,49 +359,49 @@ export const serviceCallsService = {
     );
   },
 
-async reassignEngineer(
-  tenantId: string,
-  serviceCallId: string,
-  engineerId: string,
-  remarks?: string
-) {
-  const currentVisit =
-    await serviceCallVisitsRepository.findLatestByCall(
-      tenantId,
-      serviceCallId
-    );
-
-  if (
-    currentVisit &&
-    currentVisit.status !== "RESOLVED"
+  async reassignEngineer(
+    tenantId: string,
+    serviceCallId: string,
+    engineerId: string,
+    remarks?: string
   ) {
-    await serviceCallVisitsRepository.update(
-      currentVisit.id,
+    const currentVisit =
+      await serviceCallVisitsRepository.findLatestByCall(
+        tenantId,
+        serviceCallId
+      );
+
+    if (
+      currentVisit &&
+      currentVisit.status !== "RESOLVED"
+    ) {
+      await serviceCallVisitsRepository.update(
+        currentVisit.id,
+        {
+          status: "REASSIGNED",
+
+          reassignedAt:
+            new Date(),
+
+          reassignmentRemarks:
+            remarks,
+        }
+      );
+    }
+
+    await serviceCallsRepository.update(
+      tenantId,
+      serviceCallId,
       {
-        status: "REASSIGNED",
-
-        reassignedAt:
-          new Date(),
-
-        reassignmentRemarks:
-          remarks,
+        assignedEngineerId: engineerId,
+        status: "ASSIGNED",
       }
     );
+
+    await serviceCallVisitsService.createVisit(
+      tenantId,
+      serviceCallId,
+      engineerId
+    );
   }
-
-  await serviceCallsRepository.update(
-    tenantId,
-    serviceCallId,
-    {
-      assignedEngineerId: engineerId,
-      status: "ASSIGNED",
-    }
-  );
-
-  await serviceCallVisitsService.createVisit(
-    tenantId,
-    serviceCallId,
-    engineerId
-  );
-}
 };

@@ -155,6 +155,22 @@ export const companiesRepository = {
     return result[0];
   },
 
+  async findByName(
+  tenantId: string,
+  companyName: string
+) {
+  return db.query.companies.findFirst({
+    where: and(
+      eq(companies.tenantId, tenantId),
+      eq(companies.isActive, true),
+      ilike(
+        companies.companyName,
+        companyName.trim()
+      )
+    ),
+  });
+},
+
   async findById(
     tenantId: string,
     companyId: string

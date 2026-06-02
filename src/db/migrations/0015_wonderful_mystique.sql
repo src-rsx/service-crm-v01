@@ -1,0 +1,1 @@
+ALTER TABLE "service_calls" ADD COLUMN "asset_serial_number" varchar(255);

@@ -15,6 +15,7 @@ import { ServiceCallForm }
 import {
   engineersService,
 } from "@/modules/engineers/service";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default async function NewServiceCallPage() {
   const session = await auth();
@@ -51,7 +52,7 @@ export default async function NewServiceCallPage() {
         pageSize: 100,
       }
     );
-  
+
   const engineers =
     await engineersService.getEngineers(
       session.user.tenantId,
@@ -62,15 +63,47 @@ export default async function NewServiceCallPage() {
     );
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">
-        Create Service Call
-      </h1>
+    <div className="space-y-8">
+      <div>
+<Card>
+  <CardContent className="py-6">
+    <div className="flex items-center justify-between">
+      <div>
+        <h1 className="text-3xl font-bold">
+          Create Service Call
+        </h1>
+
+        <p className="mt-2 text-muted-foreground">
+          Capture customer issues, identify equipment,
+          and dispatch engineers efficiently.
+        </p>
+      </div>
+
+      <div className="text-right">
+        <p className="text-sm text-muted-foreground">
+          Initial Status
+        </p>
+
+        <div className="
+          mt-1
+          inline-flex
+          rounded-full
+          border
+          px-3
+          py-1
+          text-sm
+          font-medium
+        ">
+          LOGGED
+        </div>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+      </div>
 
       <ServiceCallForm
-        companies={
-          companies.companies
-        }
+        companies={companies.companies}
         sites={sites.sites}
         assets={assets.assets}
         engineers={engineers.engineers}

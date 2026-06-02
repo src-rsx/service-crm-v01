@@ -23,12 +23,10 @@ export const serviceCalls = pgTable("service_calls", {
     .notNull(),
 
   companyId: uuid("company_id")
-    .references(() => companies.id)
-    .notNull(),
+    .references(() => companies.id),
 
   siteId: uuid("site_id")
-    .references(() => sites.id)
-    .notNull(),
+    .references(() => sites.id),
 
   assetId: uuid("asset_id")
     .references(() => assets.id),
@@ -44,6 +42,31 @@ export const serviceCalls = pgTable("service_calls", {
     {
       length: 100,
     }
+  ),
+
+  customerName: varchar(
+    "customer_name",
+    {
+      length: 255,
+    }
+  ),
+
+  customerMobile: varchar(
+    "customer_mobile",
+    {
+      length: 20,
+    }
+  ),
+
+  customerEmail: varchar(
+    "customer_email",
+    {
+      length: 255,
+    }
+  ),
+
+  customerAddress: text(
+    "customer_address"
   ),
 
   callType: varchar("call_type", {
@@ -73,7 +96,7 @@ export const serviceCalls = pgTable("service_calls", {
   status: varchar("status", {
     length: 30,
   })
-    .default("OPEN")
+    .default("LOGGED")
     .notNull(),
 
   reportedBy: varchar("reported_by", {
@@ -112,4 +135,12 @@ export const serviceCalls = pgTable("service_calls", {
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .notNull(),
+
+  assetSerialNumber:
+    varchar(
+      "asset_serial_number",
+      {
+        length: 255,
+      }
+    ),
 });

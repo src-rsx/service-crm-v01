@@ -5,12 +5,21 @@ export interface ServiceCallFilters {
 }
 
 export interface CreateServiceCallInput {
-  companyId: string;
-  siteId: string;
-
+  companyId?: string;
+  siteId?: string;
   assetId?: string;
+
+  companyName: string;
+  assetSerialNumber?: string;
   assignedEngineerId?: string;
+
   customerReferenceNumber?: string;
+
+  customerName: string;
+  customerMobile: string;
+
+  customerEmail?: string;
+  customerAddress?: string;
 
   callType?: string;
   source?: string;

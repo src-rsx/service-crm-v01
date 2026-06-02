@@ -2,14 +2,31 @@ import { z } from "zod";
 
 export const createServiceCallSchema =
   z.object({
-    companyId: z.string().uuid(),
+    companyId: z.preprocess(
+      (v) => v === "" ? undefined : v,
+      z.string().uuid().optional()
+    ),
 
-    siteId: z.string().uuid(),
+    companyName:
+      z.string().min(1),
 
-    assetId: z.string().uuid().optional(),
+    assetSerialNumber:
+      z.string().optional(),
 
-    assignedEngineerId:
-      z.string().uuid().optional(),
+    siteId: z.preprocess(
+      (v) => v === "" ? undefined : v,
+      z.string().uuid().optional()
+    ),
+
+    assetId: z.preprocess(
+      (v) => v === "" ? undefined : v,
+      z.string().uuid().optional()
+    ),
+
+    assignedEngineerId: z.preprocess(
+      (v) => v === "" ? undefined : v,
+      z.string().uuid().optional()
+    ),
 
     customerReferenceNumber:
       z.string().optional(),
@@ -30,21 +47,37 @@ export const createServiceCallSchema =
 
     reportedMobile:
       z.string().optional(),
+
+    customerName:
+      z.string().min(1),
+
+    customerMobile:
+      z.string().min(5),
+
+    customerEmail:
+      z.string()
+        .email()
+        .optional()
+        .or(z.literal("")),
+
+    customerAddress:
+      z.string()
+        .optional(),
   });
-  
+
 export const updateServiceCallSchema =
-    createServiceCallSchema
-        .partial()
-        .extend({
-            status:
-                z.string().optional(),
+  createServiceCallSchema
+    .partial()
+    .extend({
+      status:
+        z.string().optional(),
 
-            assignedEngineerId:
-                z.string().uuid().optional(),
+      assignedEngineerId:
+        z.string().uuid().optional(),
 
-            resolutionRemarks:
-                z.string().optional(),
-        });
+      resolutionRemarks:
+        z.string().optional(),
+    });
 
 export const assignEngineerSchema =
   z.object({
