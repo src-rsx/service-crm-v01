@@ -7,7 +7,9 @@ import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import {
+  SERVICE_CALL_PRIORITIES,
+} from "@/constants/service-call-status";
 import {
   Card,
   CardContent,
@@ -35,7 +37,7 @@ interface Asset {
   assetName: string;
   siteId: string;
 
-  serialNumber: string;
+  serialNumber: string | null;
 }
 
 interface Engineer {
@@ -701,21 +703,16 @@ export function ServiceCallForm({
                     )}
                     className="mt-2 h-10 w-full rounded-md border px-3"
                   >
-                    <option value="LOW">
-                      LOW
-                    </option>
-
-                    <option value="MEDIUM">
-                      MEDIUM
-                    </option>
-
-                    <option value="HIGH">
-                      HIGH
-                    </option>
-
-                    <option value="CRITICAL">
-                      CRITICAL
-                    </option>
+                    {SERVICE_CALL_PRIORITIES.map(
+  (priority) => (
+    <option
+      key={priority}
+      value={priority}
+    >
+      {priority}
+    </option>
+  )
+)}
                   </select>
                 </div>
 
@@ -969,23 +966,6 @@ export function ServiceCallForm({
           </div>
         </div>
       </div>
-      {/* <div className=" sticky bottom-0 bg-background border-t py-4 flex justify-end gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() =>
-            router.push(
-              "/service-calls"
-            )
-          }
-        >
-          Cancel
-        </Button>
-
-        <Button type="submit" disabled={!isValid}>
-          Create Service Call
-        </Button>
-      </div> */}
     </form>
   );
 }

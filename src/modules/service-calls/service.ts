@@ -403,5 +403,13 @@ export const serviceCallsService = {
       serviceCallId,
       engineerId
     );
+  },
+
+  async getStats(
+    tenantId: string
+  ) {
+    return serviceCallsRepository.getStats(
+      tenantId
+    );
   }
 };

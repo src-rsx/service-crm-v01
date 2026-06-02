@@ -18,6 +18,9 @@ import {
 } from "./types";
 
 import { engineers } from "@/db/schema";
+import { companies } from "@/db/schema";
+import { sites } from "@/db/schema";
+import { assets } from "@/db/schema";
 
 interface FindServiceCallsOptions {
   page?: number;
@@ -74,7 +77,17 @@ export const serviceCallsRepository = {
           ilike(
             serviceCalls.customerMobile,
             `%${options.search}%`
-          )
+          ),
+
+          ilike(
+            companies.companyName,
+            `%${options.search}%`
+          ),
+
+          ilike(
+            assets.serialNumber,
+            `%${options.search}%`
+          ),
         )!
       );
     }
@@ -106,6 +119,18 @@ export const serviceCallsRepository = {
 
         customerMobile:
           serviceCalls.customerMobile,
+
+        companyName:
+          companies.companyName,
+
+        siteName:
+          sites.siteName,
+
+        assetSerialNumber:
+          assets.serialNumber,
+
+        createdAt:
+          serviceCalls.createdAt,
       })
       .from(serviceCalls)
       .leftJoin(
@@ -113,6 +138,29 @@ export const serviceCallsRepository = {
         eq(
           serviceCalls.assignedEngineerId,
           engineers.id
+        )
+      )
+      .leftJoin(
+        companies,
+        eq(
+          serviceCalls.companyId,
+          companies.id
+        )
+      )
+
+      .leftJoin(
+        sites,
+        eq(
+          serviceCalls.siteId,
+          sites.id
+        )
+      )
+
+      .leftJoin(
+        assets,
+        eq(
+          serviceCalls.assetId,
+          assets.id
         )
       )
       .where(and(...filters))
@@ -337,5 +385,107 @@ export const serviceCallsRepository = {
       });
 
     return result?.callNumber;
+  },
+
+  async getStats(
+    tenantId: string
+  ) {
+    const logged =
+      await db
+        .select({
+          count: count(),
+        })
+        .from(serviceCalls)
+        .where(
+          and(
+            eq(
+              serviceCalls.tenantId,
+              tenantId
+            ),
+            eq(
+              serviceCalls.status,
+              "LOGGED"
+            )
+          )
+        );
+
+    const assigned =
+      await db
+        .select({
+          count: count(),
+        })
+        .from(serviceCalls)
+        .where(
+          and(
+            eq(
+              serviceCalls.tenantId,
+              tenantId
+            ),
+            eq(
+              serviceCalls.status,
+              "ASSIGNED"
+            )
+          )
+        );
+
+    const inProgress =
+      await db
+        .select({
+          count: count(),
+        })
+        .from(serviceCalls)
+        .where(
+          and(
+            eq(
+              serviceCalls.tenantId,
+              tenantId
+            ),
+            eq(
+              serviceCalls.status,
+              "IN_PROGRESS"
+            )
+          )
+        );
+
+    const resolved =
+      await db
+        .select({
+          count: count(),
+        })
+        .from(serviceCalls)
+        .where(
+          and(
+            eq(
+              serviceCalls.tenantId,
+              tenantId
+            ),
+            eq(
+              serviceCalls.status,
+              "RESOLVED"
+            )
+          )
+        );
+
+    return {
+      open:
+        Number(
+          logged[0]?.count ?? 0
+        ),
+
+      assigned:
+        Number(
+          assigned[0]?.count ?? 0
+        ),
+
+      inProgress:
+        Number(
+          inProgress[0]?.count ?? 0
+        ),
+
+      resolved:
+        Number(
+          resolved[0]?.count ?? 0
+        ),
+    };
   },
 };

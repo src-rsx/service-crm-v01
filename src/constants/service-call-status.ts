@@ -1,9 +1,16 @@
 export const SERVICE_CALL_STATUSES = [
-  "OPEN",
+  "LOGGED",
   "ASSIGNED",
-  "IN_PROGRESS",
+  "IN PROGRESS",
   "RESOLVED",
   "CLOSED",
+] as const;
+
+export const SERVICE_CALL_PRIORITIES = [
+  "LOW",
+  "MEDIUM",
+  "HIGH",
+  "CRITICAL",
 ] as const;
 
 export type ServiceCallStatus =

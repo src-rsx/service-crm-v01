@@ -40,7 +40,13 @@ export const createServiceCallSchema =
     description:
       z.string().optional(),
 
-    priority: z.string().optional(),
+    // priority: z.string().optional(),
+    priority: z.enum([
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "CRITICAL",
+    ]),
 
     reportedBy:
       z.string().optional(),
@@ -87,9 +93,9 @@ export const assignEngineerSchema =
 export const updateStatusSchema =
   z.object({
     status: z.enum([
-      "OPEN",
+      "LOGGED",
       "ASSIGNED",
-      "IN_PROGRESS",
+      "IN PROGRESS",
       "RESOLVED",
       "CLOSED",
     ]),
