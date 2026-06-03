@@ -11,6 +11,12 @@ import { serviceCalls }
 import { engineers }
   from "./schema/service/engineers";
 
+import { sites }
+  from "./schema/service/sites";
+
+import { assets }
+  from "./schema/service/assets";
+
 /**
  * Tenant Relations
  */
@@ -52,6 +58,7 @@ export const serviceCallsRelations =
   relations(
     serviceCalls,
     ({ many, one }) => ({
+
       visits: many(
         serviceCallVisits
       ),
@@ -67,6 +74,43 @@ export const serviceCallsRelations =
           ],
         }
       ),
+
+      company: one(
+        companies,
+        {
+          fields: [
+            serviceCalls.companyId,
+          ],
+          references: [
+            companies.id,
+          ],
+        }
+      ),
+
+      site: one(
+        sites,
+        {
+          fields: [
+            serviceCalls.siteId,
+          ],
+          references: [
+            sites.id,
+          ],
+        }
+      ),
+
+      asset: one(
+        assets,
+        {
+          fields: [
+            serviceCalls.assetId,
+          ],
+          references: [
+            assets.id,
+          ],
+        }
+      ),
+
     })
   );
 

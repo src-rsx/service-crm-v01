@@ -258,6 +258,9 @@ export const serviceCallsRepository = {
 
       with: {
         assignedEngineer: true,
+        company: true,
+        site: true,
+        asset: true,
       },
     });
   },

@@ -1,340 +1,294 @@
-import { auth } from "@/auth/auth";
+"use client";
 
+import { useEffect, useState, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { apiGet, apiPatch } from "@/lib/api/client";
 import {
-  serviceCallsService,
-} from "@/modules/service-calls/service";
+  ServiceCall,
+  ServiceCallStatus,
+} from "@/components/service-calls/detail/sc-types";
+import { SCHero } from "@/components/service-calls/detail/sc-hero";
+import { SCActionBar } from "@/components/service-calls/detail/sc-action-bar";
+import { SCCustomerAssetPanel } from "@/components/service-calls/detail/sc-customer-asset-panel";
+import { SCProgressTracker } from "@/components/service-calls/detail/sc-progress-tracker";
+import { SCResolutionCard } from "@/components/service-calls/detail/sc-resolution-card";
+import { SCVisitTimeline } from "@/components/service-calls/detail/sc-visit-timeline";
+import { SCAuditSection } from "@/components/service-calls/detail/sc-audit-section";
+import { AssignEngineerDialog } from "@/components/service-calls/detail/sc-assign-engineer-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
-import {
-  serviceCallVisitsService,
-} from "@/modules/service-call-visits/service";
+export default function ServiceCallDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
 
-import { CloseCallButton } from "@/components/service-calls/close-call-button";
+  const [call, setCall] =
+    useState<ServiceCall | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [assignOpen, setAssignOpen] =
+    useState(false);
 
-import {
-  engineersService,
-} from "@/modules/engineers/service";
+  const fetchCall = useCallback(async () => {
+    try {
+      const data = await apiGet<ServiceCall>(
+        `/api/service-calls/${id}`
+      );
+      setCall(data);
+    } catch {
+      toast.error("Failed to load service call");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
-import {
-  ReassignEngineer,
-} from "@/components/service-calls/reassign-engineer";
+  useEffect(() => {
+    fetchCall();
+  }, [fetchCall]);
 
-interface Props {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-export default async function ServiceCallDetailPage(
-  { params }: Props
-) {
-  const { id } =
-    await params;
-
-  const session =
-    await auth();
-
-  if (
-    !session?.user?.tenantId
+  async function handleStatusChange(
+    newStatus: ServiceCallStatus
   ) {
-    throw new Error(
-      "Tenant not found"
+    if (!call) return;
+    try {
+      await apiPatch(
+        `/api/service-calls/${id}/status`,
+        { status: newStatus }
+      );
+      toast.success(
+        `Status updated to ${newStatus}`
+      );
+      fetchCall();
+    } catch (e: unknown) {
+      toast.error(
+        e instanceof Error
+          ? e.message
+          : "Failed to update status"
+      );
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-4 p-6">
+        <Skeleton className="h-40 w-full rounded-lg" />
+        <Skeleton className="h-14 w-full rounded-lg" />
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-48 rounded-lg" />
+          <Skeleton className="h-48 rounded-lg" />
+        </div>
+        <Skeleton className="h-24 w-full rounded-lg" />
+        <Skeleton className="h-64 w-full rounded-lg" />
+      </div>
     );
   }
 
-  const call =
-    await serviceCallsService.getServiceCallById(
-      session.user.tenantId,
-      id
+  if (!call) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 text-center py-20">
+        <p className="text-zinc-500">
+          Service call not found.
+        </p>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() =>
+            router.push("/service-calls")
+          }
+        >
+          Back to Service Calls
+        </Button>
+      </div>
     );
-
-  const visit =
-    await serviceCallVisitsService.getVisitByServiceCall(
-      session.user.tenantId,
-      id
-    );
-
-  const engineersResult =
-    await engineersService.getEngineers(
-      session.user.tenantId,
-      {
-        page: 1,
-        pageSize: 100,
-      }
-    );
-
-  const visitHistory =
-    await serviceCallVisitsService
-      .getVisitHistory(
-        session.user.tenantId,
-        id
-      );
+  }
 
   return (
-    <div className="space-y-6">
-
-      <div>
-        <h1 className="text-3xl font-bold">
-          {call.callNumber}
-        </h1>
-
-        <p className="text-muted-foreground">
-          {call.subject}
-        </p>
-      </div>
-
-      <div className="border rounded-lg p-4">
-        <h2 className="font-semibold mb-4">
-          Call Information
-        </h2>
-
-        {
-          [
-            "OPEN",
-            "ASSIGNED",
-            "IN_PROGRESS",
-          ].includes(call.status) && (
-
-            <div className="border rounded-lg p-4">
-
-              <h2 className="font-semibold mb-4">
-                Reassign Engineer
-              </h2>
-
-              <ReassignEngineer
-                serviceCallId={call.id}
-                engineers={
-                  engineersResult.engineers.map(
-                    (engineer) => ({
-                      id: engineer.id,
-                      name: engineer.name,
-                    })
-                  )
-                }
-              />
-
-            </div>
-
-          )
+    <div className="max-w-4xl mx-auto p-6 space-y-4">
+      {/* Back */}
+      <button
+        onClick={() =>
+          router.push("/service-calls")
         }
+        className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-700 transition-colors mb-2"
+      >
+        <ArrowLeft size={14} />
+        Back to Service Calls
+      </button>
 
-        <div className="grid grid-cols-2 gap-4">
+      {/* Hero */}
+      <SCHero call={call} />
 
-          <div>
-            <strong>
-              Status:
-            </strong>{" "}
-            {call.status}
-          </div>
+      {/* Action Bar */}
+      <SCActionBar
+        call={call}
+        onAssign={() => setAssignOpen(true)}
+        onStatusChange={handleStatusChange}
+      />
 
-          <div>
-            <strong>
-              Priority:
-            </strong>{" "}
-            {call.priority}
-          </div>
+      {/* Customer + Asset */}
+      <SCCustomerAssetPanel call={call} />
 
-          <div>
-            <strong>
-              Reported By:
-            </strong>{" "}
-            {call.reportedBy ?? "-"}
-          </div>
+      {/* Progress Tracker */}
+      <SCProgressTracker call={call} />
 
-          <div>
-            <strong>
-              Mobile:
-            </strong>{" "}
-            {call.reportedMobile ?? "-"}
-          </div>
+      {/* Resolution */}
+      <SCResolutionCard call={call} />
 
-          <div>
-            <strong>
-              Assigned Engineer:
-            </strong>{" "}
-            {call.assignedEngineer?.name ?? "-"}
-          </div>
+      {/* Timeline */}
+      <SCVisitTimeline
+        events={call.events ?? []}
+      />
 
-        </div>
-      </div>
+      {/* Audit */}
+      <SCAuditSection call={call} />
 
-      <div className="border rounded-lg p-4">
-
-        <h2 className="font-semibold mb-4">
-          Assignment History
-        </h2>
-
-        <div className="space-y-4">
-
-          {visitHistory.map(
-            (visit) => (
-              <div
-                key={visit.id}
-                className="border-b pb-3"
-              >
-                <div>
-                  <strong>
-                    Engineer:
-                  </strong>{" "}
-                  {visit.engineer?.name ??
-                    visit.engineerId}
-                </div>
-
-                <div>
-                  Assigned:
-                  {" "}
-                  {visit.createdAt
-                    ?.toLocaleString()}
-                </div>
-
-                {visit.reassignedAt && (
-                  <div>
-                    Reassigned:
-                    {" "}
-                    {visit.reassignedAt
-                      ?.toLocaleString()}
-                  </div>
-                )}
-
-                {visit.reassignmentRemarks && (
-                  <div>
-                    Remarks:
-                    {" "}
-                    {
-                      visit.reassignmentRemarks
-                    }
-                  </div>
-                )}
-
-                <div>
-                  Status:
-                  {" "}
-                  {visit.status}
-                </div>
-
-              </div>
-            )
-          )}
-
-        </div>
-
-      </div>
-      <div className="border rounded-lg p-4">
-        <h2 className="font-semibold mb-4">
-          Visit Timeline
-        </h2>
-
-        <div className="space-y-2">
-
-          <div>
-            Assigned:
-            {" "}
-            {visit?.createdAt
-              ?.toLocaleString?.() ??
-              "-"}
-          </div>
-
-          <div>
-            Travel Started:
-            {" "}
-            {visit?.travelStartedAt
-              ?.toLocaleString?.() ??
-              "-"}
-          </div>
-
-          <div>
-            Check In:
-            {" "}
-            {visit?.checkInAt
-              ?.toLocaleString?.() ??
-              "-"}
-          </div>
-
-          <div>
-            Check Out:
-            {" "}
-            {visit?.checkOutAt
-              ?.toLocaleString?.() ??
-              "-"}
-          </div>
-
-        </div>
-      </div>
-
-      <div className="border rounded-lg p-4">
-        <h2 className="font-semibold mb-4">
-          Observation
-        </h2>
-
-        <p>
-          {visit?.observation ??
-            "No observation recorded"}
-        </p>
-      </div>
-
-      <div className="border rounded-lg p-4">
-        <h2 className="font-semibold mb-4">
-          Action Taken
-        </h2>
-
-        <p>
-          {visit?.actionTaken ??
-            "No action recorded"}
-        </p>
-      </div>
-
-      <div className="border rounded-lg p-4">
-        <h2 className="font-semibold mb-4">
-          Customer Remarks
-        </h2>
-
-        <p>
-          {visit?.customerRemarks ??
-            "No remarks recorded"}
-        </p>
-      </div>
-
-      {call.status === "RESOLVED" && (
-        <div className="border rounded-lg p-4">
-
-          <h2 className="font-semibold mb-4">
-            Service Call Closure
-          </h2>
-
-          <p className="text-muted-foreground mb-4">
-            Engineer has completed the work.
-            Review the details above and
-            close the ticket.
-          </p>
-
-          <CloseCallButton
-            id={call.id}
-          />
-
-        </div>
-      )}
-
-      {call.status === "CLOSED" && (
-        <div className="border rounded-lg p-4">
-
-          <h2 className="font-semibold">
-            Ticket Closed
-          </h2>
-
-          <p className="text-muted-foreground">
-            Closed on:
-
-            {" "}
-
-            {call.closedAt
-              ? new Date(
-                call.closedAt
-              ).toLocaleString()
-              : "-"}
-          </p>
-
-        </div>
-      )}
-
+      {/* Assign Dialog */}
+      <AssignEngineerDialog
+        open={assignOpen}
+        onClose={() => setAssignOpen(false)}
+        serviceCallId={id}
+        currentEngineerId={
+          call.assignedEngineerId
+        }
+        onAssigned={fetchCall}
+      />
     </div>
   );
 }
+
+// import { auth } from "@/auth/auth";
+
+// import {
+//   serviceCallsService,
+// } from "@/modules/service-calls/service";
+
+// import {
+//   serviceCallVisitsService,
+// } from "@/modules/service-call-visits/service";
+
+// import { CloseCallButton } from "@/components/service-calls/close-call-button";
+
+// import {
+//   engineersService,
+// } from "@/modules/engineers/service";
+
+// import {
+//   ReassignEngineer,
+// } from "@/components/service-calls/reassign-engineer";
+
+// import {
+//   ServiceCallHeader,
+// } from "@/components/service-calls/detail/service-call-header";
+
+// import {
+//   ServiceCallOverview,
+// } from "@/components/service-calls/detail/service-call-overview";
+
+// import {
+//   ServiceCallSidebar,
+// } from "@/components/service-calls/detail/service-call-sidebar";
+
+// import {
+//   ServiceCallResolution,
+// } from "@/components/service-calls/detail/service-call-resolution";
+
+// interface Props {
+//   params: Promise<{
+//     id: string;
+//   }>;
+// }
+
+// export default async function ServiceCallDetailPage(
+//   { params }: Props
+// ) {
+//   const { id } =
+//     await params;
+
+//   const session =
+//     await auth();
+
+//   if (
+//     !session?.user?.tenantId
+//   ) {
+//     throw new Error(
+//       "Tenant not found"
+//     );
+//   }
+
+//   const call =
+//     await serviceCallsService.getServiceCallById(
+//       session.user.tenantId,
+//       id
+//     );
+
+//   const visit =
+//     await serviceCallVisitsService.getVisitByServiceCall(
+//       session.user.tenantId,
+//       id
+//     );
+
+//   const engineersResult =
+//     await engineersService.getEngineers(
+//       session.user.tenantId,
+//       {
+//         page: 1,
+//         pageSize: 100,
+//       }
+//     );
+
+//   const visitHistory =
+//     await serviceCallVisitsService
+//       .getVisitHistory(
+//         session.user.tenantId,
+//         id
+//       );
+
+//   return (
+//     <div
+//       className="
+//       space-y-6
+//       max-w-7xl
+//       mx-auto
+//     "
+//     >
+
+//       <ServiceCallHeader
+//         call={call}
+//       />
+
+//       <div
+//         className="
+//     grid
+//     gap-8
+//     lg:grid-cols-12
+//     items-start
+//   "
+//       >
+//         <div
+//           className="
+//       lg:col-span-8
+//       space-y-8
+//     "
+//         >
+//           <ServiceCallOverview
+//             call={call}
+//           />
+
+//           <ServiceCallResolution
+//             visit={visit}
+//           />
+//         </div>
+
+//         <div className="lg:col-span-4">
+//           <ServiceCallSidebar
+//             call={call}
+//             engineers={
+//               engineersResult.engineers
+//             }
+//           />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
