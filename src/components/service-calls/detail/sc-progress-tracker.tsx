@@ -5,10 +5,9 @@ const PROGRESS_STEPS: ServiceCallStatus[] = [
   "LOGGED",
   "ASSIGNED",
   "IN_PROGRESS",
-  "COMPLETED",
+  "RESOLVED",
   "CLOSED",
 ];
-
 const STEP_LABELS: Record<string, string> = {
   LOGGED: "Logged",
   ASSIGNED: "Assigned",

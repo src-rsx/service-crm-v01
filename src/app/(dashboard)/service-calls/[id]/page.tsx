@@ -6,6 +6,7 @@ import { apiGet, apiPatch } from "@/lib/api/client";
 import {
   ServiceCall,
   ServiceCallStatus,
+  ServiceCallVisit,
 } from "@/components/service-calls/detail/sc-types";
 import { SCHero } from "@/components/service-calls/detail/sc-hero";
 import { SCActionBar } from "@/components/service-calls/detail/sc-action-bar";
@@ -29,6 +30,8 @@ export default function ServiceCallDetailPage() {
   const [loading, setLoading] = useState(true);
   const [assignOpen, setAssignOpen] =
     useState(false);
+  const [visit, setVisit] =
+    useState<ServiceCallVisit | null>(null);
 
   const fetchCall = useCallback(async () => {
     try {
@@ -36,6 +39,15 @@ export default function ServiceCallDetailPage() {
         `/api/service-calls/${id}`
       );
       setCall(data);
+      // Fetch latest visit
+      try {
+        const visitData = await apiGet<ServiceCallVisit | null>(
+          `/api/service-calls/${id}/visit`
+        );
+        setVisit(visitData);
+      } catch {
+        setVisit(null);
+      }
     } catch {
       toast.error("Failed to load service call");
     } finally {
@@ -47,27 +59,24 @@ export default function ServiceCallDetailPage() {
     fetchCall();
   }, [fetchCall]);
 
-  async function handleStatusChange(
-    newStatus: ServiceCallStatus
-  ) {
-    if (!call) return;
-    try {
-      await apiPatch(
-        `/api/service-calls/${id}/status`,
-        { status: newStatus }
-      );
-      toast.success(
-        `Status updated to ${newStatus}`
-      );
-      fetchCall();
-    } catch (e: unknown) {
-      toast.error(
-        e instanceof Error
-          ? e.message
-          : "Failed to update status"
-      );
-    }
+async function handleStatusChange(
+  newStatus: ServiceCallStatus,
+  remarks?: string
+) {
+  if (!call) return;
+  try {
+    await apiPatch(
+      `/api/service-calls/${id}/status`,
+      { status: newStatus, remarks }
+    );
+    toast.success(`Status updated to ${newStatus}`);
+    fetchCall();
+  } catch (e: unknown) {
+    toast.error(
+      e instanceof Error ? e.message : "Failed to update status"
+    );
   }
+}
 
   if (loading) {
     return (
@@ -133,7 +142,7 @@ export default function ServiceCallDetailPage() {
       <SCProgressTracker call={call} />
 
       {/* Resolution */}
-      <SCResolutionCard call={call} />
+      <SCResolutionCard call={call} visit={visit} />
 
       {/* Timeline */}
       <SCVisitTimeline
@@ -156,139 +165,3 @@ export default function ServiceCallDetailPage() {
     </div>
   );
 }
-
-// import { auth } from "@/auth/auth";
-
-// import {
-//   serviceCallsService,
-// } from "@/modules/service-calls/service";
-
-// import {
-//   serviceCallVisitsService,
-// } from "@/modules/service-call-visits/service";
-
-// import { CloseCallButton } from "@/components/service-calls/close-call-button";
-
-// import {
-//   engineersService,
-// } from "@/modules/engineers/service";
-
-// import {
-//   ReassignEngineer,
-// } from "@/components/service-calls/reassign-engineer";
-
-// import {
-//   ServiceCallHeader,
-// } from "@/components/service-calls/detail/service-call-header";
-
-// import {
-//   ServiceCallOverview,
-// } from "@/components/service-calls/detail/service-call-overview";
-
-// import {
-//   ServiceCallSidebar,
-// } from "@/components/service-calls/detail/service-call-sidebar";
-
-// import {
-//   ServiceCallResolution,
-// } from "@/components/service-calls/detail/service-call-resolution";
-
-// interface Props {
-//   params: Promise<{
-//     id: string;
-//   }>;
-// }
-
-// export default async function ServiceCallDetailPage(
-//   { params }: Props
-// ) {
-//   const { id } =
-//     await params;
-
-//   const session =
-//     await auth();
-
-//   if (
-//     !session?.user?.tenantId
-//   ) {
-//     throw new Error(
-//       "Tenant not found"
-//     );
-//   }
-
-//   const call =
-//     await serviceCallsService.getServiceCallById(
-//       session.user.tenantId,
-//       id
-//     );
-
-//   const visit =
-//     await serviceCallVisitsService.getVisitByServiceCall(
-//       session.user.tenantId,
-//       id
-//     );
-
-//   const engineersResult =
-//     await engineersService.getEngineers(
-//       session.user.tenantId,
-//       {
-//         page: 1,
-//         pageSize: 100,
-//       }
-//     );
-
-//   const visitHistory =
-//     await serviceCallVisitsService
-//       .getVisitHistory(
-//         session.user.tenantId,
-//         id
-//       );
-
-//   return (
-//     <div
-//       className="
-//       space-y-6
-//       max-w-7xl
-//       mx-auto
-//     "
-//     >
-
-//       <ServiceCallHeader
-//         call={call}
-//       />
-
-//       <div
-//         className="
-//     grid
-//     gap-8
-//     lg:grid-cols-12
-//     items-start
-//   "
-//       >
-//         <div
-//           className="
-//       lg:col-span-8
-//       space-y-8
-//     "
-//         >
-//           <ServiceCallOverview
-//             call={call}
-//           />
-
-//           <ServiceCallResolution
-//             visit={visit}
-//           />
-//         </div>
-
-//         <div className="lg:col-span-4">
-//           <ServiceCallSidebar
-//             call={call}
-//             engineers={
-//               engineersResult.engineers
-//             }
-//           />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }

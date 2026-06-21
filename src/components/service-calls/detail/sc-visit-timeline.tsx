@@ -60,6 +60,31 @@ const EVENT_CONFIG: EventConfigMap = {
     color: "text-zinc-500",
     bg: "bg-zinc-100",
   },
+
+  TRAVEL_STARTED: {
+    label: "Travel Started",
+    icon: Play,
+    color: "text-blue-600",
+    bg: "bg-blue-100",
+  },
+  CHECKED_IN: {
+    label: "Checked In",
+    icon: UserCheck,
+    color: "text-green-600",
+    bg: "bg-green-100",
+  },
+  CHECKED_OUT: {
+    label: "Checked Out",
+    icon: CheckCircle,
+    color: "text-green-700",
+    bg: "bg-green-100",
+  },
+  RESOLVED: {
+    label: "Work Resolved",
+    icon: CheckCircle,
+    color: "text-green-700",
+    bg: "bg-green-100",
+  },
 };
 
 function getEventConfig(eventType: string) {

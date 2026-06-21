@@ -30,6 +30,9 @@ import {
   serviceCallVisitsRepository,
 } from "@/modules/service-call-visits/repository";
 
+import { db } from "@/db";
+import { serviceCallEvents } from "@/db/schema";
+
 interface GetServiceCallsOptions {
   page?: number;
   pageSize?: number;
@@ -332,31 +335,58 @@ export const serviceCallsService = {
       engineerId
     );
 
+    // Log the event
+    await db
+      .insert(serviceCallEvents)
+      .values({
+        serviceCallId,
+        eventType: "ENGINEER_ASSIGNED",
+        oldStatus: serviceCall.status,
+        newStatus: "ASSIGNED",
+        remarks: `Assigned to ${engineer.name}`,
+        performedByUserId: null,
+      });
+
     return updatedCall;
   },
 
-  async updateStatus(
+async updateStatus(
     tenantId: string,
     serviceCallId: string,
-    status: string
+    status: string,
+    remarks?: string,
+    performedByUserId?: string
   ) {
     const serviceCall =
       await serviceCallsRepository.findById(
         tenantId,
         serviceCallId
       );
-
     if (!serviceCall) {
       throw new Error(
         "Service call not found"
       );
     }
 
-    return serviceCallsRepository.updateStatus(
-      tenantId,
-      serviceCallId,
-      status
-    );
+    const updated =
+      await serviceCallsRepository.updateStatus(
+        tenantId,
+        serviceCallId,
+        status
+      );
+
+    await db
+      .insert(serviceCallEvents)
+      .values({
+        serviceCallId,
+        eventType: "STATUS_CHANGED",
+        oldStatus: serviceCall.status,
+        newStatus: status,
+        remarks: remarks ?? null,
+        performedByUserId: performedByUserId ?? null,
+      });
+
+    return updated;
   },
 
   async reassignEngineer(

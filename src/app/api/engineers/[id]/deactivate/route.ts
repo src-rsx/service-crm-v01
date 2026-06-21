@@ -4,11 +4,8 @@ import { NextResponse }
 import { requireTenant }
   from "@/lib/tenant/require-tenant";
 
-import { serviceCallsService }
-  from "@/modules/service-calls/service";
-
-import { updateStatusSchema }
-  from "@/modules/service-calls/schemas";
+import { engineersService }
+  from "@/modules/engineers/service";
 
 export async function PATCH(
   request: Request,
@@ -26,23 +23,13 @@ export async function PATCH(
   const tenantId =
     await requireTenant();
 
-  const body =
-    await request.json();
-
-  const validated =
-    updateStatusSchema.parse(
-      body
-    );
-
-  const serviceCall =
-    await serviceCallsService.updateStatus(
+  const engineer =
+    await engineersService.deactivateEngineer(
       tenantId,
-      id,
-      validated.status,
-      validated.remarks
+      id
     );
 
   return NextResponse.json(
-    serviceCall
+    engineer
   );
 }

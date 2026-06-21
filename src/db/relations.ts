@@ -17,6 +17,8 @@ import { sites }
 import { assets }
   from "./schema/service/assets";
 
+import { serviceCallEvents }
+  from "./schema/service/service-call-events";
 /**
  * Tenant Relations
  */
@@ -99,7 +101,7 @@ export const serviceCallsRelations =
         }
       ),
 
-      asset: one(
+asset: one(
         assets,
         {
           fields: [
@@ -110,6 +112,8 @@ export const serviceCallsRelations =
           ],
         }
       ),
+
+      events: many(serviceCallEvents),
 
     })
   );
@@ -138,6 +142,24 @@ export const serviceCallVisitsRelations =
           ],
           references: [
             engineers.id,
+          ],
+        }
+      ),
+    })
+  );
+
+  export const serviceCallEventsRelations =
+  relations(
+    serviceCallEvents,
+    ({ one }) => ({
+      serviceCall: one(
+        serviceCalls,
+        {
+          fields: [
+            serviceCallEvents.serviceCallId,
+          ],
+          references: [
+            serviceCalls.id,
           ],
         }
       ),

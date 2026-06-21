@@ -3,6 +3,7 @@ export type ServiceCallStatus =
   | "ASSIGNED"
   | "IN_PROGRESS"
   | "PARTS_REQUIRED"
+  | "RESOLVED"
   | "COMPLETED"
   | "CLOSED";
 
@@ -117,8 +118,9 @@ type TransitionMap = Record<ServiceCallStatus, ServiceCallStatus[]>;
 export const VALID_TRANSITIONS: TransitionMap = {
   LOGGED: ["ASSIGNED"],
   ASSIGNED: ["LOGGED", "IN_PROGRESS"],
-  IN_PROGRESS: ["PARTS_REQUIRED", "COMPLETED"],
+  IN_PROGRESS: ["PARTS_REQUIRED", "RESOLVED"],
   PARTS_REQUIRED: ["IN_PROGRESS"],
+  RESOLVED: ["CLOSED"],
   COMPLETED: ["CLOSED"],
   CLOSED: [],
 };
@@ -148,6 +150,11 @@ export const STATUS_CONFIG: StatusConfigMap = {
   },
   COMPLETED: {
     label: "Completed",
+    color: "text-green-700",
+    bg: "bg-green-100",
+  },
+    RESOLVED: {
+    label: "Resolved",
     color: "text-green-700",
     bg: "bg-green-100",
   },
@@ -181,3 +188,16 @@ export const PRIORITY_CONFIG: PriorityConfigMap = {
     bg: "bg-red-100",
   },
 };
+
+export interface ServiceCallVisit {
+  id: string;
+  status: string;
+  observation: string | null;
+  actionTaken: string | null;
+  customerName: string | null;
+  customerMobile: string | null;
+  customerRemarks: string | null;
+  travelStartedAt: string | null;
+  checkInAt: string | null;
+  checkOutAt: string | null;
+}

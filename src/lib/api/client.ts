@@ -94,10 +94,8 @@ export async function apiPatch<T>(
   });
 
   const json = await res.json();
-
   if (!json.success) {
     throw new Error(json.error ?? "Request failed");
   }
-
-  return json.data as T;
+  return (json.data ?? json) as T;
 }

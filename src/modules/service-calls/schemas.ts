@@ -95,8 +95,11 @@ export const updateStatusSchema =
     status: z.enum([
       "LOGGED",
       "ASSIGNED",
-      "IN PROGRESS",
+      "IN_PROGRESS",
+      "PARTS_REQUIRED",
       "RESOLVED",
+      "COMPLETED",
       "CLOSED",
     ]),
+    remarks: z.string().optional(),
   });

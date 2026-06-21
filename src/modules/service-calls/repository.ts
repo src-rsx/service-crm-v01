@@ -256,11 +256,17 @@ export const serviceCallsRepository = {
         )
       ),
 
-      with: {
+with: {
         assignedEngineer: true,
         company: true,
         site: true,
         asset: true,
+        events: {
+          orderBy: (
+            events: any,
+            { desc }: any
+          ) => [desc(events.createdAt)],
+        },
       },
     });
   },

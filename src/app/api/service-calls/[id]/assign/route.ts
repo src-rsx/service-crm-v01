@@ -43,7 +43,8 @@ export async function PATCH(
       validated.engineerId
     );
 
-  return NextResponse.json(
-    serviceCall
-  );
+return NextResponse.json({
+    success: true,
+    data: serviceCall,
+  });
 }
