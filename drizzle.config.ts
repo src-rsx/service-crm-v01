@@ -1,4 +1,3 @@
-console.log(process.env.DATABASE_URL?.substring(0, 50));
 import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
 
